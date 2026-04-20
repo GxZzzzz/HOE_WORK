@@ -7,7 +7,7 @@
         WindowStyle="None"
         Topmost="True"
         ResizeMode="CanResize"
-        Background="Transparent"
+        Background="#01000000"
         AllowsTransparency="True"
         ShowInTaskbar="False"
         SourceInitialized="Window_SourceInitialized">

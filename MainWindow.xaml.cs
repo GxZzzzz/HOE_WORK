@@ -567,23 +567,36 @@ namespace VirtualKeyboard
             // 处理 WM_NCHITTEST 消息（窗口缩放）
             if (msg == WM_NCHITTEST)
             {
-                // 获取鼠标位置（屏幕坐标）
-                int x = lParam.ToInt32() & 0xFFFF;
-                int y = lParam.ToInt32() >> 16;
-                
-                // 转换为窗口坐标
-                var point = PointFromScreen(new Point(x, y));
-                x = (int)point.X;
-                y = (int)point.Y;
-                
+                long lp = lParam.ToInt64();
+                int screenX = (short)(lp & 0xFFFF);
+                int screenY = (short)((lp >> 16) & 0xFFFF);
+
+                Point point;
+                try
+                {
+                    point = PointFromScreen(new Point(screenX, screenY));
+                }
+                catch
+                {
+                    return IntPtr.Zero;
+                }
+
+                double x = point.X;
+                double y = point.Y;
+
                 double windowWidth = ActualWidth;
                 double windowHeight = ActualHeight;
-                
-                // 判断鼠标在哪个边框区域
-                bool onLeft = x <= RESIZE_MARGIN;
-                bool onRight = x >= windowWidth - RESIZE_MARGIN;
-                bool onTop = y <= RESIZE_MARGIN;
-                bool onBottom = y >= windowHeight - RESIZE_MARGIN;
+                if (windowWidth <= 0 || windowHeight <= 0)
+                {
+                    return IntPtr.Zero;
+                }
+
+                double margin = RESIZE_MARGIN;
+
+                bool onLeft = x >= 0 && x <= margin;
+                bool onRight = x <= windowWidth && x >= windowWidth - margin;
+                bool onTop = y >= 0 && y <= margin;
+                bool onBottom = y <= windowHeight && y >= windowHeight - margin;
                 
                 if (onTop && onLeft)
                 {
