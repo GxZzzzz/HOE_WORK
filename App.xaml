@@ -1,0 +1,309 @@
+<Application x:Class="VirtualKeyboard.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <!-- 基础按键样式 -->
+        <Style x:Key="BaseKeyStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource KeyBackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource KeyBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Foreground" Value="{DynamicResource KeyForegroundBrush}"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8">
+                                <Border.Effect>
+                                    <!-- 添加绿色发光效果 -->
+                                    <DropShadowEffect Color="{DynamicResource KeyGlowColor}" 
+                                                      Direction="270" 
+                                                      ShadowDepth="0" 
+                                                      BlurRadius="8" 
+                                                      Opacity="0.6"/>
+                                </Border.Effect>
+                                <ContentPresenter HorizontalAlignment="Center" 
+                                                VerticalAlignment="Center"
+                                                Margin="{TemplateBinding Padding}"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource KeyHoverBackgroundBrush}"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="{DynamicResource KeyGlowColor}" 
+                                                          Direction="270" 
+                                                          ShadowDepth="0" 
+                                                          BlurRadius="12" 
+                                                          Opacity="0.8"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource KeyPressedBackgroundBrush}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource KeyPressedBorderBrush}"/>
+                                <Setter TargetName="border" Property="Margin" Value="0,2,0,0"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="{DynamicResource KeyGlowColor}" 
+                                                          Direction="270" 
+                                                          ShadowDepth="0" 
+                                                          BlurRadius="4" 
+                                                          Opacity="0.4"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 1. 正方形按键样式 (数字、字母键) -->
+        <Style x:Key="SquareKeyStyle" TargetType="Button" BasedOn="{StaticResource BaseKeyStyle}">
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Height" Value="50"/>
+        </Style>
+
+        <!-- 2. 反L型 Enter 按键样式 (使用 Path 实现) -->
+        <Style x:Key="EnterKeyStyle" TargetType="Button" BasedOn="{StaticResource BaseKeyStyle}">
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Height" Value="104"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Grid x:Name="pathContainer">
+                                <Grid.Effect>
+                                    <DropShadowEffect Color="{DynamicResource KeyGlowColor}" 
+                                                      Direction="270" 
+                                                      ShadowDepth="0" 
+                                                      BlurRadius="8" 
+                                                      Opacity="0.6"/>
+                                </Grid.Effect>
+                                <!-- 使用 Path 绘制反L形状 -->
+                                <Path Fill="{TemplateBinding Background}"
+                                      Stroke="{TemplateBinding BorderBrush}"
+                                      StrokeThickness="2">
+                                    <Path.Data>
+                                        <!-- 反L型路径：从左上角开始，顺时针绘制 -->
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="60,0">
+                                                <!-- 上边（窄） -->
+                                                <LineSegment Point="90,0"/>
+                                                <!-- 右上角圆角 -->
+                                                <ArcSegment Point="98,8" Size="8,8" SweepDirection="Clockwise"/>
+                                                <!-- 右边 -->
+                                                <LineSegment Point="98,96"/>
+                                                <!-- 右下角圆角 -->
+                                                <ArcSegment Point="90,104" Size="8,8" SweepDirection="Clockwise"/>
+                                                <!-- 下边（宽） -->
+                                                <LineSegment Point="20,104"/>
+                                                <!-- 左下角圆角 -->
+                                                <ArcSegment Point="13,96" Size="8,8" SweepDirection="Clockwise"/>
+                                                <!-- 左边到缺口下方 -->
+                                                <LineSegment Point="13,62"/>
+                                                <!-- 缺口左下角圆角（向内） -->
+                                                <ArcSegment Point="21,55" Size="8,8" SweepDirection="Counterclockwise"/>
+                                                <!-- 缺口下边 -->
+                                                <LineSegment Point="42,55"/>
+                                                <!-- 缺口右下角圆角（向内） -->
+                                                <ArcSegment Point="55,50" Size="12,6" SweepDirection="Counterclockwise"/>
+                                                <!-- 缺口右边（上半部分的左边） -->
+                                                <LineSegment Point="55,8"/>
+                                                <!-- 缺口到左上角圆 -->
+                                                <ArcSegment Point="60,0" Size="8,8" SweepDirection="Clockwise"/>
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                                <!-- Enter 文字 -->
+                                <TextBlock Text="Enter" 
+                                           HorizontalAlignment="Right" 
+                                           VerticalAlignment="Bottom"
+                                           FontSize="{TemplateBinding FontSize}"
+                                           Foreground="{TemplateBinding Foreground}"
+                                           Margin="0,0,10,15"/>
+                            </Grid>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource KeyHoverBackgroundBrush}"/>
+                                <Setter TargetName="pathContainer" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="{DynamicResource KeyGlowColor}" 
+                                                          Direction="270" 
+                                                          ShadowDepth="0" 
+                                                          BlurRadius="12" 
+                                                          Opacity="0.8"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource KeyPressedBackgroundBrush}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource KeyPressedBorderBrush}"/>
+                                <Setter TargetName="pathContainer" Property="Margin" Value="0,2,0,0"/>
+                                <Setter TargetName="pathContainer" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="{DynamicResource KeyGlowColor}" 
+                                                          Direction="270" 
+                                                          ShadowDepth="0" 
+                                                          BlurRadius="4" 
+                                                          Opacity="0.4"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 3. 长方形按键样式 - Tab (1.5倍宽度) -->
+        <Style x:Key="TabKeyStyle" TargetType="Button" BasedOn="{StaticResource BaseKeyStyle}">
+            <Setter Property="Width" Value="75"/>
+            <Setter Property="Height" Value="50"/>
+        </Style>
+
+        <!-- 4. 长方形按键样式 - CapsLock (1.75倍宽度) -->
+        <Style x:Key="CapsLockKeyStyle" TargetType="Button" BasedOn="{StaticResource BaseKeyStyle}">
+            <Setter Property="Width" Value="88"/>
+            <Setter Property="Height" Value="50"/>
+        </Style>
+
+        <!-- 切换按键样式 (ToggleButton) - 用于 CapsLock, NumLock 等 -->
+        <Style x:Key="ToggleKeyStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{DynamicResource KeyBackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource KeyBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Foreground" Value="{DynamicResource KeyForegroundBrush}"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="88"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid>
+                            <Border x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="{DynamicResource KeyGlowColor}" 
+                                                      Direction="270" 
+                                                      ShadowDepth="0" 
+                                                      BlurRadius="8" 
+                                                      Opacity="0.6"/>
+                                </Border.Effect>
+                                <Grid>
+                                    <ContentPresenter HorizontalAlignment="Center" 
+                                                    VerticalAlignment="Center"
+                                                    Margin="{TemplateBinding Padding}"/>
+                                    <!-- 锁定指示灯 -->
+                                    <Ellipse x:Name="indicator" 
+                                             Width="8" 
+                                             Height="8" 
+                                             Fill="{DynamicResource KeyBorderBrush}" 
+                                             HorizontalAlignment="Right" 
+                                             VerticalAlignment="Top"
+                                             Margin="0,8,8,0"
+                                             Visibility="Collapsed">
+                                        <Ellipse.Effect>
+                                            <DropShadowEffect Color="{DynamicResource KeyGlowColor}" 
+                                                              ShadowDepth="0" 
+                                                              BlurRadius="6" 
+                                                              Opacity="1"/>
+                                        </Ellipse.Effect>
+                                    </Ellipse>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource KeyHoverBackgroundBrush}"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="{DynamicResource KeyGlowColor}" 
+                                                          Direction="270" 
+                                                          ShadowDepth="0" 
+                                                          BlurRadius="12" 
+                                                          Opacity="0.8"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource KeyPressedBackgroundBrush}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource KeyPressedBorderBrush}"/>
+                                <Setter TargetName="border" Property="Margin" Value="0,2,0,0"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="{DynamicResource KeyGlowColor}" 
+                                                          Direction="270" 
+                                                          ShadowDepth="0" 
+                                                          BlurRadius="4" 
+                                                          Opacity="0.4"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <!-- 锁定状态 -->
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource ModifierActiveBackgroundBrush}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource KeyBorderBrush}"/>
+                                <Setter TargetName="indicator" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="border" Property="Margin" Value="0,2,0,0"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="{DynamicResource KeyGlowColor}" 
+                                                          Direction="270" 
+                                                          ShadowDepth="0" 
+                                                          BlurRadius="15" 
+                                                          Opacity="0.9"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 5. 长方形按键样式 - Shift (2.25倍宽度) -->
+        <Style x:Key="ShiftKeyStyle" TargetType="Button" BasedOn="{StaticResource BaseKeyStyle}">
+            <Setter Property="Width" Value="113"/>
+            <Setter Property="Height" Value="50"/>
+        </Style>
+
+        <!-- 6. 长方形按键样式 - 空格 (6.25倍宽度) -->
+        <Style x:Key="SpaceKeyStyle" TargetType="Button" BasedOn="{StaticResource BaseKeyStyle}">
+            <Setter Property="Width" Value="313"/>
+            <Setter Property="Height" Value="50"/>
+        </Style>
+
+        <!-- 其他常用按键样式 -->
+        <!-- Backspace (2倍宽度) -->
+        <Style x:Key="BackspaceKeyStyle" TargetType="Button" BasedOn="{StaticResource BaseKeyStyle}">
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Height" Value="50"/>
+        </Style>
+
+        <!-- Ctrl, Alt, Win 等功能键 (1.25倍宽度) -->
+        <Style x:Key="FunctionKeyStyle" TargetType="Button" BasedOn="{StaticResource BaseKeyStyle}">
+            <Setter Property="Width" Value="63"/>
+            <Setter Property="Height" Value="50"/>
+        </Style>
+
+    </Application.Resources>
+</Application>
