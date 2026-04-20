@@ -14,12 +14,6 @@
 - Windows
 - .NET SDK 6.0+
 
-## 运行
-
-```powershell
-dotnet build
-dotnet run
-```
 
 ## 解决方案/项目文件
 
